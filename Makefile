@@ -8,7 +8,7 @@ $(BUILD_DIR)/liblogga.a: $(BUILD_DIR)/logga.o | $(BUILD_DIR)
 $(BUILD_DIR)/logga.o: $(SRC_DIR)/logga.c | $(BUILD_DIR)
 	clang -c -O3 -Iinclude -Wall -Wextra -pedantic -o $@ $<
 
-$(BIN_DIR)/test: $(BUILD_DIR)/test.o | $(BIN_DIR)
+$(BIN_DIR)/test: $(BUILD_DIR)/test.o $(BUILD_DIR)/liblogga.a | $(BIN_DIR)
 	clang -L$(BUILD_DIR) -llogga -Wall -Wextra -pedantic -o $@ $<
 
 $(BUILD_DIR)/test.o: $(SRC_DIR)/test.c | $(BUILD_DIR)
