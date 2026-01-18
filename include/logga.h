@@ -11,6 +11,8 @@ typedef enum {
     LOGGA_ERROR,
 } logga_level_t;
 
+const char *logga_lvtostr(logga_level_t level);
+
 /** Set log outfile. */
 void logga_set_outfile(FILE *);
 /** Set log level; default is LOGGA_INFO. */

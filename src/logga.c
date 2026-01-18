@@ -59,6 +59,21 @@ static void logga(char *level, char *msg, va_list ap)
     free(buf);
 }
 
+const char *logga_lvtostr(logga_level_t level)
+{
+    switch (level) {
+        case LOGGA_TRACE: return "TRACE";
+        case LOGGA_DEBUG: return "DEBUG";
+        case LOGGA_INFO:  return "INFO";
+        case LOGGA_WARN:  return "WARNING";
+        case LOGGA_ERROR: return "ERROR";
+        default: {
+            fprintf(stderr, "ERROR (logga): unexhaustive options (logga_lvtostr)\n");
+            exit(1);
+        }
+    }
+}
+
 void logga_trace(char *msg, ...)
 {
     if (logga_level > LOGGA_TRACE) return;
