@@ -13,16 +13,20 @@ typedef enum {
 
 const char *logga_lvtostr(logga_level_t level);
 
-/** Set log outfile. */
-void logga_set_outfile(FILE *);
-/** Set log level; default is LOGGA_INFO. */
-void logga_set_level(logga_level_t level);
+typedef struct {
+    char *name;
+    logga_level_t level;
+    FILE *outfile;
+} logga_t;
 
-void logga_trace(char *msg, ...);
-void logga_debug(char *msg, ...);
-void logga_info(char *msg, ...);
-void logga_warn(char *msg, ...);
-void logga_error(char *msg, ...);
+/** Set defaults. */
+void logga_init(logga_t *logga);
+
+void logga_trace(logga_t *logga, char *msg, ...);
+void logga_debug(logga_t *logga, char *msg, ...);
+void logga_info(logga_t *logga, char *msg, ...);
+void logga_warn(logga_t *logga, char *msg, ...);
+void logga_error(logga_t *logga, char *msg, ...);
 
 #ifdef NO_LOGGA_PREFIX
 #define TRACE LOGGA_TRACE 

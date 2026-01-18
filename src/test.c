@@ -4,18 +4,19 @@
 #include "logga.h"
 
 
+static logga_t logga;
+
 void foo(void)
 {
-    trace("foo()");
-    warn("no-op");
+    trace(&logga, "foo()");
+    warn(&logga, "no-op");
 }
 
 int main(int argc, char *argv[])
 {
-    logga_set_level(TRACE);
-    logga_set_outfile(stderr);
-    trace("main()");
-    info("hello, world!");
+    logga_init(&logga);
+    trace(&logga, "main()");
+    info(&logga, "hello, world!");
     foo();
     return 0;
 }

@@ -13,20 +13,7 @@
 #include "logga.h"
 
 
-static FILE *OUTFILE = NULL;
-static logga_level_t logga_level = LOGGA_INFO;
-
-void logga_set_outfile(FILE *outfile)
-{
-    OUTFILE = outfile;
-}
-
-void logga_set_level(logga_level_t level)
-{
-    logga_level = level;
-}
-
-static void logga(char *level, char *msg, va_list ap)
+static char *get_log_head(logga_level_t level, char *name)
 {
     struct timespec tp;
     clock_gettime(CLOCK_REALTIME, &tp);
@@ -36,27 +23,49 @@ static void logga(char *level, char *msg, va_list ap)
     gmtime_r(&secs, &tinfo);
 
     char *log_head = NULL;
-    asprintf(&log_head, "[%04d-%02d-%02d %02d:%02d:%02d,%03ld] %s: ",
-             tinfo.tm_year + 1900, tinfo.tm_mon + 1, tinfo.tm_mday,
-             tinfo.tm_hour, tinfo.tm_min, tinfo.tm_sec, ms,
-             level);
+    if (name != NULL) {
+        asprintf(
+            &log_head, "[%04d-%02d-%02d %02d:%02d:%02d,%03ld] %s (%s): ",
+            tinfo.tm_year + 1900, tinfo.tm_mon + 1, tinfo.tm_mday,
+            tinfo.tm_hour, tinfo.tm_min, tinfo.tm_sec, ms,
+            logga_lvtostr(level), name
+        );
+    } else {
+        asprintf(
+            &log_head, "[%04d-%02d-%02d %02d:%02d:%02d,%03ld] %s: ",
+            tinfo.tm_year + 1900, tinfo.tm_mon + 1, tinfo.tm_mday,
+            tinfo.tm_hour, tinfo.tm_min, tinfo.tm_sec, ms,
+            logga_lvtostr(level)
+        );
+    }
 
+    return log_head;
+}
+
+static char *concatenate(char *str1, char *str2)
+{
+    size_t str1_len = strlen(str1);
+    size_t str2_len = strlen(str2);
+    size_t total_len = str1_len + str2_len + 1;
+    char *buf = malloc(total_len);
+    strncpy(buf, str1, str1_len);
+    strncpy(buf + str1_len, str2, str2_len);
+    buf[total_len - 1] = '\0';
+    return buf;
+}
+
+static void log(logga_t *logga, char *msg, va_list ap)
+{
+    char *log_head = get_log_head(logga->level, logga->name);
     char *msg_formatted = NULL;
     vasprintf(&msg_formatted, msg, ap);
+    char *log_msg = concatenate(log_head, msg_formatted);
 
-    size_t log_head_len = strlen(log_head);
-    size_t msgf_len = strlen(msg_formatted);
-    size_t total_len = log_head_len + msgf_len + 1;
-    char *buf = malloc(total_len);
-    strncpy(buf, log_head, log_head_len);
-    strncpy(buf + log_head_len, msg_formatted, msgf_len);
-    buf[total_len - 1] = '\0';
+    fprintf(logga->outfile, "%s\n", log_msg);
 
-    fprintf(OUTFILE, "%s\n", buf);
-
+    free(log_msg);
     free(msg_formatted);
     free(log_head);
-    free(buf);
 }
 
 const char *logga_lvtostr(logga_level_t level)
@@ -68,52 +77,64 @@ const char *logga_lvtostr(logga_level_t level)
         case LOGGA_WARN:  return "WARNING";
         case LOGGA_ERROR: return "ERROR";
         default: {
-            fprintf(stderr, "ERROR (logga): unexhaustive options (logga_lvtostr)\n");
+            char *log_head = get_log_head(LOGGA_ERROR, "logga");
+            char *msg = "unexhaustive options (logga_lvtostr)";
+            char *log_msg = concatenate(log_head, msg);
+            fprintf(stderr, "%s\n", log_msg);
+            free(log_msg);
+            free(log_head);
             exit(1);
         }
     }
 }
 
-void logga_trace(char *msg, ...)
+void logga_init(logga_t *logga)
 {
-    if (logga_level > LOGGA_TRACE) return;
+    logga->name = NULL;
+    logga->level = LOGGA_INFO;
+    logga->outfile = stderr;
+}
+
+void logga_trace(logga_t *logga, char *msg, ...)
+{
+    if (logga->level > LOGGA_TRACE) return;
     va_list ap;
     va_start(ap, msg);
-    logga("TRACE", msg, ap);
+    log(logga, msg, ap);
     va_end(ap);
 }
 
-void logga_debug(char *msg, ...)
+void logga_debug(logga_t *logga, char *msg, ...)
 {
-    if (logga_level > LOGGA_DEBUG) return;
+    if (logga->level > LOGGA_DEBUG) return;
     va_list ap;
     va_start(ap, msg);
-    logga("DEBUG", msg, ap);
+    log(logga, msg, ap);
     va_end(ap);
 }
 
-void logga_info(char *msg, ...)
+void logga_info(logga_t *logga, char *msg, ...)
 {
-    if (logga_level > LOGGA_INFO) return;
+    if (logga->level > LOGGA_INFO) return;
     va_list ap;
     va_start(ap, msg);
-    logga("INFO", msg, ap);
+    log(logga, msg, ap);
     va_end(ap);
 }
 
-void logga_warn(char *msg, ...)
+void logga_warn(logga_t *logga, char *msg, ...)
 {
-    if (logga_level > LOGGA_WARN) return;
+    if (logga->level > LOGGA_WARN) return;
     va_list ap;
     va_start(ap, msg);
-    logga("WARNING", msg, ap);
+    log(logga, msg, ap);
     va_end(ap);
 }
 
-void logga_error(char *msg, ...)
+void logga_error(logga_t *logga, char *msg, ...)
 {
     va_list ap;
     va_start(ap, msg);
-    logga("ERROR", msg, ap);
+    log(logga, msg, ap);
     va_end(ap);
 }
