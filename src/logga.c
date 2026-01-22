@@ -54,9 +54,9 @@ static char *concatenate(char *str1, char *str2)
     return buf;
 }
 
-static void log(logga_t *logga, char *msg, va_list ap)
+static void log(logga_t *logga, logga_level_t level, char *msg, va_list ap)
 {
-    char *log_head = get_log_head(logga->level, logga->name);
+    char *log_head = get_log_head(level, logga->name);
     char *msg_formatted = NULL;
     vasprintf(&msg_formatted, msg, ap);
     char *log_msg = concatenate(log_head, msg_formatted);
@@ -100,7 +100,7 @@ void logga_trace(logga_t *logga, char *msg, ...)
     if (logga->level > LOGGA_TRACE) return;
     va_list ap;
     va_start(ap, msg);
-    log(logga, msg, ap);
+    log(logga, LOGGA_TRACE, msg, ap);
     va_end(ap);
 }
 
@@ -109,7 +109,7 @@ void logga_debug(logga_t *logga, char *msg, ...)
     if (logga->level > LOGGA_DEBUG) return;
     va_list ap;
     va_start(ap, msg);
-    log(logga, msg, ap);
+    log(logga, LOGGA_DEBUG, msg, ap);
     va_end(ap);
 }
 
@@ -118,7 +118,7 @@ void logga_info(logga_t *logga, char *msg, ...)
     if (logga->level > LOGGA_INFO) return;
     va_list ap;
     va_start(ap, msg);
-    log(logga, msg, ap);
+    log(logga, LOGGA_INFO, msg, ap);
     va_end(ap);
 }
 
@@ -127,7 +127,7 @@ void logga_warn(logga_t *logga, char *msg, ...)
     if (logga->level > LOGGA_WARN) return;
     va_list ap;
     va_start(ap, msg);
-    log(logga, msg, ap);
+    log(logga, LOGGA_WARN, msg, ap);
     va_end(ap);
 }
 
@@ -135,6 +135,6 @@ void logga_error(logga_t *logga, char *msg, ...)
 {
     va_list ap;
     va_start(ap, msg);
-    log(logga, msg, ap);
+    log(logga, LOGGA_ERROR, msg, ap);
     va_end(ap);
 }
