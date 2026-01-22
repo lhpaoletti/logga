@@ -11,15 +11,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ## [Unreleased]
 
 ### Added
-### Changed
 ### Deprecated
 ### Removed
 ### Fixed
 ### Security
 
 
-## [0.2.1] 2026-01-22
+## [0.3.0] 2026-01-22
 
+### Changed
+- Changed project structure to facilitate being a third-party dependency, either as git-subtree or as git-submodule.  
+  This means that projects can now put this project in a `lib/logga/` sub-directory in their project – in the case of git-subtree – and use `-Ilib/logga/include` and `lib/logga/logga.o`.  This facilitates keeping logga up-to-date, while making Makefiles easier to manage.
 ### Fixed
 - Print correct log-level according to the logging function used instead of always printing the logga level
 
